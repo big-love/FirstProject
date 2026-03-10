@@ -2,6 +2,8 @@ package com.chunfeng.entity.constants;
 
 public class Constants {
 
+    public static final String appName = "私有云盘";
+
     public static final String ZERO_STR = "0";
     public static final Integer ZERO = 0;
     public static final Integer LENGTH_5 = 5;
@@ -57,4 +59,10 @@ public class Constants {
     public static final String REDIS_KEY_REFRESH_TOKEN = "refresh:token:";
     public static final String REDIS_KEY_USER_FIRST_LOGIN = "user:first:login:";
     public static final String REDIS_KEY_TOKEN_BLACK_LIST = "token:blacklist:";
+
+    // 邮件 验证码
+    public static final int EMAIL_CODE_LENGTH = 6;
+    public static final int EMAIL_EXPIRE_MINUTES = 5;
+    public static final long EMAIL_SEND_MIN_INTERVAL_SECONDS = 60;
+    public static final String EMAIL_CAPTCHA_LIMIT = "captcha:email:limit:";
 }

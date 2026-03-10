@@ -74,4 +74,7 @@ public class LoginRequest {
      */
     @Schema(description = "是否记住登录状态", example = "false")
     private Boolean rememberMe = false;
+
+    private String captchaKey;     // 图片验证码的 key
+    private String captchaCode;    // 用户输入的验证码值
 }

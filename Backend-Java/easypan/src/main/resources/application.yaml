@@ -99,7 +99,7 @@ admin:
 # ???????
 dev: false
 
-## qq???? ##
+## qq?? ##
 qq:
   app:
     id: 12333
@@ -129,3 +129,8 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+# mybatis
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true

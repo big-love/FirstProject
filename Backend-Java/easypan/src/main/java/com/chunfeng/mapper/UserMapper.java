@@ -1,9 +1,7 @@
 package com.chunfeng.mapper;
 
 import com.chunfeng.entity.po.UserInfo;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.*;
 
 /**
  * @ClassName UserMapper
@@ -39,6 +37,18 @@ public interface UserMapper {
     * @return void
     *
     * */
-    @Select("update user set nick_name = #{nickName}, qq_avatar = #{qqAvatar}, status = #{status} where user_id = #{userId}")
+    @Select("update user_info set nick_name = #{nickName}, qq_avatar = #{qqAvatar}, status = #{status} where user_id = #{userId}")
     void updateById(UserInfo userInfo);
+
+    /*
+    * @description: 注册用户
+    * @param email
+    * @param password
+    * @param nickname
+    * @return void
+    *
+    * */
+    @Insert("insert into user_info (email, password, nick_name, status) values (#{email}, #{password}, #{nickName}, #{status})")
+    @Options(useGeneratedKeys = true, keyProperty = "userId", keyColumn = "user_id")
+    void register(UserInfo userInfo);
 }

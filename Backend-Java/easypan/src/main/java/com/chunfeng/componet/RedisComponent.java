@@ -16,4 +16,21 @@ public class RedisComponent {
         return redisUtils.get(blacklistKey) != null;
     }
 
+    /**
+     * 【新增】通用的 set 方法，带过期时间
+     * * @param key   Redis的键
+     * @param value Redis的值
+     * @param time  过期时间（单位通常是秒，具体看你 redisUtils 的实现）
+     */
+    public void set(String key, Object value, long time) {
+        redisUtils.setex(key, value, time);
+    }
+
+    public String getString(String redisKey) {
+        return redisUtils.getString(redisKey);
+    }
+
+    public void delete(String redisKey) {
+        redisUtils.delete(redisKey);
+    }
 }

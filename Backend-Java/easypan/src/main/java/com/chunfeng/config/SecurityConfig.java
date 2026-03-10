@@ -39,14 +39,14 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/swagger-resources/**",
-                                "/webjars/**",
-                                "/favicon.ico"
+                                "/webjars/**"
 
                         ).permitAll()
+                    .requestMatchers("/favicon.ico").permitAll()
 
                         // ✅ 注册、验证码、登录接口 — 允许匿名访问
                     .requestMatchers(
-                        "/api/auth/**"         // 如果有子路径也可以加
+                        "/chunfeng/auth/**"         // 如果有子路径也可以加
                     ).permitAll()
 
                         // ✅ 静态资源、错误页

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${subject}"></title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333;">
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
+    <h2 style="color: #2c3e50; margin-bottom: 24px;" th:text="${appName + ' - ' + subject}"></h2>
+
+    <p>亲爱的用户，您好！</p>
+
+    <p th:text="${tips}"></p>
+
+    <div style="text-align: center; margin: 32px 0;">
+        <div style="display: inline-block; padding: 12px 32px; background: #f8f9fa; border-radius: 8px; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #e74c3c; border: 2px dashed #e74c3c;">
+            <span th:text="${code}"></span>
+        </div>
+    </div>
+
+    <p>验证码 <strong th:text="${expireMinutes + '分钟'}" style="color: #e67e22;"></strong> 内有效，请勿泄露给他人。</p>
+
+    <p style="color: #7f8c8d; font-size: 14px; margin-top: 32px;">
+        如果这不是您本人的操作，请忽略此邮件或联系我们。
+    </p>
+
+    <hr style="border: none; border-top: 1px solid #eee; margin: 24px 0;">
+
+    <p style="font-size: 13px; color: #95a5a6; text-align: center;">
+        © <span th:text="${year}"></span> <span th:text="${appName}"></span> - 保留所有权利
+    </p>
+</div>
+</body>
+</html>

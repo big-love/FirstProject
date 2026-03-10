@@ -14,6 +14,23 @@ public class RedisUtils<V> {
     @Resource
     private RedisTemplate<String,V> redisTemplate;
 
+
+    public String getString(String key) {
+        if (key == null) {
+            return null;
+        }
+        Object value = redisTemplate.opsForValue().get(key);
+        if (value == null) {
+            return null;
+        }
+        // 兼容大多数情况
+        if (value instanceof String) {
+            return (String) value;
+        }
+
+        return value.toString();
+    }
+
     public V get(String key) {
         return key == null ? null : redisTemplate.opsForValue().get(key);
     }
