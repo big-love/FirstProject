@@ -54,17 +54,6 @@ public class LoginRequest {
     private String password;
 
     /**
-     * 验证码（可选字段）
-     *
-     * 用途：
-     * - 防止自动化攻击
-     * - 在登录失败多次后要求输入
-     * - 可以是图形验证码或短信验证码
-     */
-    @Schema(description = "验证码（可选）", example = "AB12")
-    private String captcha;
-
-    /**
      * 记住我标识（可选字段）
      *
      * 用途：

@@ -1,0 +1,61 @@
+package com.chunfeng.common.page;
+
+import lombok.Data;
+
+import java.io.Serializable;
+
+/**
+ * @ClassName PageQuery
+ * @Author chunfeng
+ * @Description 分页请求基类
+ * @date 2026/3/18 19:33
+ * @Version 1.0
+ */
+
+@Data
+public class PageQuery implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 当前页码，默认第1页
+     */
+    private Integer pageNum = 1;
+
+    /**
+     * 每页数量，默认10条
+     */
+    private Integer pageSize = 10;
+
+    /**
+     * 排序字段
+     */
+    private String orderBy;
+
+    /**
+     * 排序方向：ASC/DESC
+     */
+    private String orderDirection = "DESC";
+
+    /**
+     * 获取MyBatis分页插件的offset
+     */
+    public Integer getOffset() {
+        return (pageNum - 1) * pageSize;
+    }
+
+    /**
+     * 校验并修正分页参数
+     */
+    public void validate() {
+        if (pageNum == null || pageNum < 1) {
+            pageNum = 1;
+        }
+        if (pageSize == null || pageSize < 1) {
+            pageSize = 10;
+        }
+        if (pageSize > 100) {
+            pageSize = 100; // 防止单次查询过多
+        }
+    }
+}

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chunfeng.mapper.StorageFileMapper">
+
+    <resultMap id="BaseResultMap" type="com.chunfeng.entity.po.StorageFilePO">
+        <id column="id" property="id"/>
+        <result column="file_md5" property="fileMd5"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="file_path" property="filePath"/>
+        <result column="ref_count" property="refCount"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, file_md5, file_size, file_path, ref_count, create_time
+    </sql>
+
+    <sql id="Query_Where_Clause">
+        <where>
+            <if test="query.fileMd5 != null and query.fileMd5 != ''">
+                AND file_md5 = #{query.fileMd5}
+            </if>
+            <if test="query.fileSizeMin != null">
+                AND file_size &gt;= #{query.fileSizeMin}
+            </if>
+            <if test="query.fileSizeMax != null">
+                AND file_size &lt;= #{query.fileSizeMax}
+            </if>
+            <if test="query.filePathLike != null and query.filePathLike != ''">
+                AND file_path LIKE CONCAT('%', #{query.filePathLike}, '%')
+            </if>
+            <if test="query.refCountMin != null">
+                AND ref_count &gt;= #{query.refCountMin}
+            </if>
+            <if test="query.createTimeStart != null and query.createTimeStart != ''">
+                AND create_time &gt;= #{query.createTimeStart}
+            </if>
+            <if test="query.createTimeEnd != null and query.createTimeEnd != ''">
+                AND create_time &lt;= #{query.createTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countByQuery" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM storage_file
+        <include refid="Query_Where_Clause"/>
+    </select>
+
+    <select id="selectByQuery" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM storage_file
+        <include refid="Query_Where_Clause"/><if test="query.orderBy != null and query.orderBy != ''">
+        ORDER BY ${query.orderBy} ${query.orderDirection}
+    </if>
+        <if test="query.orderBy == null or query.orderBy == ''">
+            ORDER BY create_time DESC
+        </if>LIMIT #{query.offset}, #{query.pageSize}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM storage_file
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByMd5" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM storage_file
+        WHERE file_md5 = #{fileMd5}
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO storage_file (file_md5, file_size, file_path, ref_count)
+        VALUES (#{fileMd5}, #{fileSize}, #{filePath}, #{refCount})
+    </insert>
+
+    <update id="updateRefCount">
+        UPDATE storage_file
+        SET ref_count = ref_count + #{increment}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

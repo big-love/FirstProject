@@ -46,7 +46,7 @@ public class SecurityConfig {
 
                         // ✅ 注册、验证码、登录接口 — 允许匿名访问
                     .requestMatchers(
-                        "/chunfeng/auth/**"         // 如果有子路径也可以加
+                        "/auth/**"         // 如果有子路径也可以加
                     ).permitAll()
 
                         // ✅ 静态资源、错误页

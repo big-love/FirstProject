@@ -145,7 +145,7 @@ public class CaptchaServiceImpl implements CaptchaService {
         String key = UUID.randomUUID().toString().replace("_","");
         // 2.使用 hutool 生成带圆圈干扰的验证码
         // 参数依次为: 宽130， 高40， 验证码长度4， 干扰圆圈个数10
-        CircleCaptcha captcha = CaptchaUtil.createCircleCaptcha(130, 40, 4, 10);
+        CircleCaptcha captcha = CaptchaUtil.createCircleCaptcha(100, 40, 4, 5);
         // 3.从captcha 对象中获取验证码字符，并转为大写
         String code = captcha.getCode().toUpperCase();
         // 4.获取验证码的base64图片字符串
@@ -163,13 +163,13 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public void verifyImageCaptcha(String key, String code) {
         if (StrUtil.isBlank( key) || StrUtil.isBlank(code))
-            throw new BusinessException("验证码不能为空");
+            throw new BusinessException("图像验证码不能为空");
         String redisKey = IMAGE_CAPTCHA_KEY_PREFIX + key;
         String redisCode = redisComponent.getString(redisKey);
         if (redisCode == null)
-            throw new BusinessException("验证码已过期或不存在");
-        if (!redisCode.equals(code))
-            throw new BusinessException("验证码错误");
+            throw new BusinessException("图像验证码已过期或不存在");
+        if (!redisCode.equalsIgnoreCase(code))
+            throw new BusinessException("图像验证码错误");
         redisComponent.delete(redisKey);
     }
 
@@ -177,7 +177,7 @@ public class CaptchaServiceImpl implements CaptchaService {
     public void verifyEmailCaptcha(String email, String type, String code) {
 
         if (StrUtil.isBlank(email) || StrUtil.isBlank(type) || StrUtil.isBlank(code))
-            throw new BusinessException("验证码不能为空");
+            throw new BusinessException("邮箱验证码不能为空");
 
         EmailCaptchaType typeCode = EmailCaptchaType.fromCode(type);
         if (typeCode == null)
@@ -186,10 +186,10 @@ public class CaptchaServiceImpl implements CaptchaService {
         String redisKey = EMAIL_CAPTCHA_KEY_PREFIX + type + ":" + email;
         String redisCode = redisComponent.getString(redisKey);
         if (redisCode == null)
-            throw new BusinessException("验证码已过期或不存在");
+            throw new BusinessException("邮箱验证码已过期或不存在");
 
         if (!redisCode.equals(code))
-            throw new BusinessException("验证码错误");
+            throw new BusinessException("邮箱验证码错误");
 
         redisComponent.delete(redisKey);
     }
@@ -329,23 +329,23 @@ public class CaptchaServiceImpl implements CaptchaService {
     @Override
     public LoginResponse register(RegisterRequest request) {
         // 1.检验两次密码是否准确
-        if (!request.getPassword().equals(request.getConfirmPassword()))
+        if (!request.getRegisterPassword().equals(request.getReRegisterPassword()))
             throw new BusinessException("两次密码不一致");
         // 2.检验邮箱验证码
-        verifyEmailCaptcha(request.getEmail(), "register", request.getCaptchaCode());
+        verifyEmailCaptcha(request.getEmail(), "register", request.getEmailCode());
         // 3.检测邮箱是否存在
         if (userMapper.selectByEmail(request.getEmail()) != null)
             throw new BusinessException("邮箱已存在");
 
         UserInfo userInfo = new UserInfo();
-        userInfo.setPassword(bCryptPasswordEncoder.encode(request.getPassword()));
+        userInfo.setPassword(bCryptPasswordEncoder.encode(request.getRegisterPassword()));
         userInfo.setEmail(request.getEmail());
-        userInfo.setNickName(request.getNickname());
+        userInfo.setNickName(request.getNickName());
         userInfo.setStatus(1);
 
         userMapper.register(userInfo);
 
-        return login(request.getEmail(), request.getPassword());
+        return login(request.getEmail(), request.getRegisterPassword());
 
     }
 }

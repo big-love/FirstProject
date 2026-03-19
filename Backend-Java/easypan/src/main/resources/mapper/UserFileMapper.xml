@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chunfeng.mapper.UserFileMapper">
+
+    <resultMap id="BaseResultMap" type="com.chunfeng.entity.po.UserFilePO">
+        <id column="id" property="id"/>
+        <result column="file_id" property="fileId"/>
+        <result column="user_id" property="userId"/>
+        <result column="storage_id" property="storageId"/>
+        <result column="file_pid" property="filePid"/>
+        <result column="file_name" property="fileName"/>
+        <result column="file_size" property="fileSize"/>
+        <result column="folder_type" property="folderType"/>
+        <result column="del_flag" property="delFlag"/>
+        <result column="create_time" property="createTime"/>
+        <result column="last_update_time" property="lastUpdateTime"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id, file_id, user_id, storage_id, file_pid, file_name,
+        file_size, folder_type, del_flag, create_time, last_update_time
+    </sql>
+
+    <sql id="Query_Where_Clause">
+        <where>
+            <if test="query.fileId != null and query.fileId != ''">
+                AND file_id = #{query.fileId}
+            </if>
+            <if test="query.userId != null and query.userId != ''">
+                AND user_id = #{query.userId}
+            </if>
+            <if test="query.filePid != null and query.filePid != ''">
+                AND file_pid = #{query.filePid}
+            </if>
+            <if test="query.fileNameLike != null and query.fileNameLike != ''">
+                AND file_name LIKE CONCAT('%', #{query.fileNameLike}, '%')
+            </if>
+            <if test="query.folderType != null">
+                AND folder_type = #{query.folderType}
+            </if>
+            <if test="query.delFlag != null">
+                AND del_flag = #{query.delFlag}
+            </if>
+            <if test="query.storageId != null">
+                AND storage_id = #{query.storageId}
+            </if><if test="query.fileSizeMin != null">
+            AND file_size &gt;= #{query.fileSizeMin}
+        </if>
+            <if test="query.fileSizeMax != null">
+                AND file_size &lt;= #{query.fileSizeMax}
+            </if>
+            <if test="query.createTimeStart != null and query.createTimeStart != ''">
+                AND create_time &gt;= #{query.createTimeStart}
+            </if>
+            <if test="query.createTimeEnd != null and query.createTimeEnd != ''">
+                AND create_time &lt;= #{query.createTimeEnd}
+            </if>
+            <if test="query.updateTimeStart != null and query.updateTimeStart != ''">
+                AND last_update_time &gt;= #{query.updateTimeStart}
+            </if>
+            <if test="query.updateTimeEnd != null and query.updateTimeEnd != ''">
+                AND last_update_time &lt;= #{query.updateTimeEnd}
+            </if>
+        </where>
+    </sql>
+
+    <select id="countByQuery" resultType="java.lang.Long">
+        SELECT COUNT(1)
+        FROM user_file
+        <include refid="Query_Where_Clause"/>
+    </select>
+
+    <select id="selectByQuery" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM user_file
+        <include refid="Query_Where_Clause"/>
+        <if test="query.orderBy != null and query.orderBy != ''">
+            ORDER BY ${query.orderBy} ${query.orderDirection}
+        </if>
+        <if test="query.orderBy == null or query.orderBy == ''">
+            ORDER BY folder_type DESC, last_update_time DESC
+        </if>
+        LIMIT #{query.offset}, #{query.pageSize}
+    </select>
+
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM user_file
+        WHERE id = #{id}
+    </select>
+
+    <select id="selectByFileId" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM user_file
+        WHERE file_id = #{fileId}
+    </select>
+
+    <select id="selectByUserAndPid" resultMap="BaseResultMap">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM user_file
+        WHERE user_id = #{userId}AND file_pid = #{filePid}
+        <if test="delFlag != null">
+            AND del_flag = #{delFlag}
+        </if>ORDER BY folder_type DESC, last_update_time DESC
+    </select>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user_file (
+            file_id, user_id, storage_id, file_pid, file_name,
+            file_size, folder_type, del_flag
+        ) VALUES (
+                     #{fileId}, #{userId}, #{storageId}, #{filePid}, #{fileName},
+                     #{fileSize}, #{folderType}, #{delFlag}
+                 )
+    </insert>
+
+    <update id="updateById">
+        UPDATE user_file<set>
+        <if test="fileName != null and fileName != ''">
+            file_name = #{fileName},
+        </if>
+        <if test="filePid != null">
+            file_pid = #{filePid},
+        </if>
+        <if test="delFlag != null">
+            del_flag = #{delFlag},
+        </if>
+        last_update_time = NOW()
+    </set>
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateDelFlag">
+        UPDATE user_file
+        SET del_flag = #{delFlag},
+            last_update_time = NOW()
+        WHERE file_id = #{fileId}
+    </update>
+
+    <update id="batchUpdateDelFlag">
+        UPDATE user_file
+        SET del_flag = #{delFlag},
+        last_update_time = NOW()
+        WHERE file_id IN
+        <foreach collection="fileIds" item="fileId" open="(" separator="," close=")">
+            #{fileId}
+        </foreach>
+    </update>
+
+</mapper>

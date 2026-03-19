@@ -2,11 +2,10 @@
 server:
   port: 7090
   servlet:
-    #    context-path: /api
-    # session???? 60M ????
     session:
       # Spring Boot 3.x ???? Duration ???PT60M ?? 60 ??
       timeout: PT60M
+    context-path: /chunfeng
 
 
 # ????
@@ -44,7 +43,7 @@ spring:
   # ?????
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://127.0.0.1:3306/easypan?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://127.0.0.1:3306/easypan?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
     hikari: # HikariCP ?????
@@ -84,8 +83,9 @@ spring:
           min-idle: 0 # ???????????
 
 # ????
-project:
-  folder: D:/work/code/myProject/CloudDriver/Backend-Java/easypan
+file:
+  upload:
+    path: D:/Code/project/CloudDriver/data
 
 # ?????? (??????? Logback ??)
 log:
@@ -134,3 +134,4 @@ knife4j:
 mybatis:
   configuration:
     map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml
