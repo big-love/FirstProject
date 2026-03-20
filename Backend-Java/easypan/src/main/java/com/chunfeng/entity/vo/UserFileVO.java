@@ -22,6 +22,11 @@ public class UserFileVO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     /**
+     * 文件ID
+     */
+    private Long id;
+
+    /**
      * 业务文件ID
      */
     private String fileId;

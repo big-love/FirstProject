@@ -112,23 +112,27 @@ qq:
     redirect: http://easypan.wuhancoder.com/qqlogincalback
 
 
-# springdoc-openapi????
+# springdoc-openapi 配置
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
     tags-sorter: alpha
     operations-sorter: alpha
+    enabled: true
   api-docs:
     path: /v3/api-docs
+    enabled: true
   group-configs:
     - group: 'default'
       paths-to-match: '/**'
       packages-to-scan: com.chunfeng.controller
-# knife4j???????????????
+# knife4j 增强配置
 knife4j:
   enable: true
   setting:
     language: zh_cn
+    swagger-model-name: 实体类列表
+    swagger-api-name: 接口文档列表
 
 # mybatis
 mybatis:

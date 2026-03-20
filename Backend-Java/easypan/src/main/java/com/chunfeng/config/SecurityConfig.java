@@ -46,7 +46,11 @@ public class SecurityConfig {
 
                         // ✅ 注册、验证码、登录接口 — 允许匿名访问
                     .requestMatchers(
-                        "/auth/**"         // 如果有子路径也可以加
+                        "/auth/checkCode",
+                        "/auth/sendEmailCode",
+                        "/auth/login",
+                        "/auth/register",
+                        "/auth/validate"
                     ).permitAll()
 
                         // ✅ 静态资源、错误页

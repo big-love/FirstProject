@@ -3,7 +3,7 @@ package com.chunfeng.mapper;
 import com.chunfeng.entity.po.StorageFilePO;
 import com.chunfeng.entity.query.StorageFileQuery;
 import org.apache.ibatis.annotations.Mapper;
-import org.springframework.data.repository.query.Param;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 

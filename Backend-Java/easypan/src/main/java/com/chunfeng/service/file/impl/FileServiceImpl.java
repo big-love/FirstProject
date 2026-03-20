@@ -1,12 +1,13 @@
 package com.chunfeng.service.file.impl;
 
+import com.chunfeng.common.page.PageResult;
 import com.chunfeng.dto.request.file.UploadFileRequest;
 import com.chunfeng.dto.response.file.UploadResponse;
-import com.chunfeng.entity.po.FileInfo;
 import com.chunfeng.entity.po.StorageFilePO;
 import com.chunfeng.entity.po.UserFilePO;
+import com.chunfeng.entity.query.UserFileQuery;
+import com.chunfeng.entity.vo.UserFileVO;
 import com.chunfeng.exception.BusinessException;
-import com.chunfeng.mapper.FileMapper;
 import com.chunfeng.mapper.StorageFileMapper;
 import com.chunfeng.mapper.UserFileMapper;
 import com.chunfeng.service.file.FileService;
@@ -19,6 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
 
 /**
  * @ClassName FileServiceImpl
@@ -38,8 +40,45 @@ public class FileServiceImpl implements FileService {
     @Value("${file.upload.path}")
     private String uploadPath;
 
+
+    @Override
+    public PageResult<UserFileVO> loadFileList(UserFileQuery query) {
+        query.validate();
+        
+        List<UserFilePO> poList = userFileMapper.selectByQuery(query);
+        Long total = userFileMapper.countByQuery(query);
+        
+        List<UserFileVO> voList = poList.stream()
+            .map(this::convertToVO)
+            .toList();
+        
+        return PageResult.of(
+            query.getPageNum(),
+            query.getPageSize(),
+            total,
+            voList
+        );
+    }
+
+    private UserFileVO convertToVO(UserFilePO po) {
+        UserFileVO vo = new UserFileVO();
+        vo.setId(po.getId());
+        vo.setFileId(po.getFileId());
+        vo.setUserId(po.getUserId().toString());
+        vo.setStorageId(po.getStorageId());
+        vo.setFilePid(po.getFilePid());
+        vo.setFileName(po.getFileName());
+        vo.setFileSize(po.getFileSize());
+        vo.setFolderType(po.getFolderType());
+        vo.setDelFlag(po.getDelFlag());
+        vo.setCreateTime(po.getCreateTime());
+        vo.setLastUpdateTime(po.getLastUpdateTime());
+        return vo;
+    }
+
     @Override
     public UploadResponse uploadFile(UploadFileRequest request, Long userId) {
+        // todo 存在并发问题，minion上传，消息队列
         // 1.首次上传检查
         if (request.getChunkIndex() == 0) {
             // 1.1 检查同目录是否存在同名文件

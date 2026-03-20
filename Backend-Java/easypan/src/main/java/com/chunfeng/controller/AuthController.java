@@ -12,6 +12,8 @@ import com.chunfeng.entity.constants.Constants;
 import com.chunfeng.security.JwtUtil;
 import com.chunfeng.service.captcha.CaptchaService;
 import com.chunfeng.utils.CommonUtils;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequestMapping("/auth")
+@Tag(name = "用户认证管理", description = "用户注册、登录、登出、验证码等相关接口")
 public class AuthController {
     
     @Autowired
@@ -40,12 +43,12 @@ public class AuthController {
     @Autowired
     private CommonUtils commonUtils;
 
-
     /*
      * 获取图片验证码
      *
-     * @return 图片验证码(Base64)
+     * @return 图片验证码 (Base64)
      * */
+    @Operation(summary = "获取图片验证码")
     @PostMapping("/checkCode")
     public Result<CaptchaVO> getImageCaptcha() {
         return Result.success(captchaService.generateImageCaptcha());

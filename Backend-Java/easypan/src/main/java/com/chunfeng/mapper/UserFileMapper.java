@@ -4,8 +4,8 @@ import com.chunfeng.entity.po.UserFilePO;
 import com.chunfeng.entity.query.UserFileQuery;
 import jakarta.validation.constraints.NotBlank;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
