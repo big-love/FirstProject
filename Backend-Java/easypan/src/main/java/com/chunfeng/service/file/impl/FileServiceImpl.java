@@ -12,6 +12,7 @@ import com.chunfeng.entity.po.UserFilePO;
 import com.chunfeng.entity.query.UserFileQuery;
 import com.chunfeng.entity.vo.UserFileVO;
 import com.chunfeng.enums.FileCategoryEnums;
+import com.chunfeng.enums.FileFolderTypeEnums;
 import com.chunfeng.enums.FileTypeEnums;
 import com.chunfeng.exception.BusinessException;
 import com.chunfeng.mapper.StorageFileMapper;
@@ -20,7 +21,6 @@ import com.chunfeng.service.file.FileService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -35,6 +35,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.time.LocalDateTime;
 
 /**
  * @ClassName FileServiceImpl
@@ -474,6 +475,11 @@ public class FileServiceImpl implements FileService {
 
     @Override
     public void download(String downloadCode, HttpServletResponse response) {
+
+    }
+
+    @Override
+    public void download(String downloadCode, Long userId, HttpServletResponse response) {
         // 1. 从 Redis 获取下载信息
         DownloadFileDto downloadDto = (DownloadFileDto) redisComponent.get(Constants.REDIS_KEY_DOWNLOAD + downloadCode);
         if (downloadDto == null) {
@@ -508,6 +514,130 @@ public class FileServiceImpl implements FileService {
             log.error("文件下载失败", e);
             response.setStatus(500);
         }
+    }
+
+    @Override
+    public UserFileVO rename(String fileId, String fileName, Long userId) {
+        // 1. 查询文件
+        UserFilePO userFile = userFileMapper.selectByFileId(fileId);
+        if (userFile == null) {
+            throw new BusinessException("文件不存在");
+        }
+        
+        // 2. 验证权限
+        if (!userFile.getUserId().equals(userId)) {
+            throw new BusinessException("无权限操作该文件");
+        }
+        
+        // 3. 检查同目录下是否已存在同名文件
+        UserFilePO existFile = userFileMapper.selectByUserIdAndPidAndName(
+            userId, userFile.getFilePid(), fileName
+        );
+        if (existFile != null && !existFile.getFileId().equals(fileId)) {
+            throw new BusinessException("同目录下已存在同名文件");
+        }
+        
+        // 4. 更新文件名
+        String newFileName = fileName;
+        // 如果是文件（不是文件夹），需要保留原后缀
+        if (userFile.getFolderType() == 0) {
+            String originalName = userFile.getFileName();
+            int lastDotIndex = originalName.lastIndexOf(".");
+            if (lastDotIndex > 0) {
+                String suffix = originalName.substring(lastDotIndex);
+                newFileName = fileName + suffix;
+            }
+        }
+        
+        userFile.setFileName(newFileName);
+        userFileMapper.updateById(userFile);
+        
+        return convertToVO(userFile);
+    }
+
+    @Override
+    public UserFileVO newFolder(String filePid, String fileName, Long userId) {
+        // 1. 检查同目录下是否已存在同名文件夹
+        UserFilePO existFile = userFileMapper.selectByUserIdAndPidAndName(
+            userId, filePid, fileName
+        );
+        if (existFile != null) {
+            throw new BusinessException("同目录下已存在同名文件夹");
+        }
+        
+        // 2. 创建文件夹
+        UserFilePO folder = new UserFilePO();
+        folder.setUserId(userId);
+        folder.setFileId(0L);
+        folder.setStorageId(0L); // 文件夹没有物理存储
+        folder.setFilePid(filePid);
+        folder.setFileName(fileName);
+        folder.setFileSize(0L);
+        folder.setFolderType(FileFolderTypeEnums.FOLDER.getType()); // 1: 文件夹
+        folder.setDelFlag(2); // 2: 正常
+        folder.setFileCategory(FileCategoryEnums.OTHERS.getCategory()); // 文件夹没有分类
+        folder.setFileType(0); // 文件夹类型为 0
+        
+        userFileMapper.insert(folder);
+        
+        return convertToVO(folder);
+    }
+
+    @Override
+    public List<UserFileVO> getFolderInfo(String path, Long userId) {
+        List<UserFileVO> folderList = new java.util.ArrayList<>();
+        
+        // 如果 path 为空或为 "0"，表示根目录，返回空列表
+        if (path == null || path.isEmpty() || "0".equals(path)) {
+            return folderList;
+        }
+        
+        try {
+            // 分割路径，获取所有文件夹 ID（这些 ID 是数据库主键 id）
+            String[] folderIds = path.split("/");
+            
+            // 依次查询每个文件夹的信息
+            for (String folderIdStr : folderIds) {
+                if (folderIdStr == null || folderIdStr.isEmpty()) {
+                    continue;
+                }
+                
+                Long folderId = Long.parseLong(folderIdStr);
+                
+                // 直接通过主键 ID 查询
+                UserFilePO folder = userFileMapper.selectById(folderId);
+                
+                if (folder == null) {
+                    throw new BusinessException("文件夹不存在");
+                }
+                
+                // 验证权限：确保该文件夹属于当前用户且是文件夹类型
+                if (!folder.getUserId().equals(userId)) {
+                    throw new BusinessException("无权限访问该文件夹");
+                }
+                
+                if (!folder.getFolderType().equals(1)) {
+                    throw new BusinessException("该文件不是文件夹");
+                }
+                
+                if (!folder.getDelFlag().equals(2)) {
+                    throw new BusinessException("文件夹已被删除或在回收站");
+                }
+                
+                folderList.add(convertToVO(folder));
+            }
+        } catch (NumberFormatException e) {
+            throw new BusinessException("路径格式错误");
+        }
+        
+        return folderList;
+    }
+
+    /**
+     * 生成文件 ID
+     */
+    private String generateFileId() {
+        return java.util.UUID.randomUUID().toString().replace("-", "");
     }
 
 }

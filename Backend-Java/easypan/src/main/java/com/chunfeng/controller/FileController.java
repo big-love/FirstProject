@@ -2,14 +2,13 @@ package com.chunfeng.controller;
 
 import com.chunfeng.common.page.PageResult;
 import com.chunfeng.dto.request.file.LoadFileListRequest;
+import com.chunfeng.dto.request.file.RenameRequest;
 import com.chunfeng.dto.request.file.UploadFileRequest;
 import com.chunfeng.dto.response.file.LoadFileListResponse;
 import com.chunfeng.dto.response.file.UploadResponse;
-import com.chunfeng.entity.po.UserFilePO;
 import com.chunfeng.entity.query.UserFileQuery;
 import com.chunfeng.entity.vo.UserFileVO;
 import com.chunfeng.enums.FileCategoryEnums;
-import com.chunfeng.enums.FileTypeEnums;
 import com.chunfeng.security.JwtUtil;
 import com.chunfeng.service.file.FileService;
 import com.chunfeng.utils.CommonUtils;
@@ -23,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.util.List;
 
 /**
@@ -86,7 +84,6 @@ public class FileController {
         if ("all".equals(loadRequest.getCategory())) {
             // 全部文件模式，使用 filePid 查询指定目录
             query.setFilePid(loadRequest.getFilePid());
-            log.info("全部文件模式，filePid: {}", loadRequest.getFilePid());
         } else if (loadRequest.getCategory() != null && !loadRequest.getCategory().isEmpty()) {
             // 分类筛选模式（video/music/image/doc），查询所有该分类的文件
             query.setFilePid(null);
@@ -136,20 +133,14 @@ public class FileController {
         item.setFileSize(vo.getFileSize());
         item.setFolderType(vo.getFolderType());
 
-        log.info("====== 转换文件信息 ======");
-        log.info("文件名：{}, fileType: {}, folderType: {}, fileCategory: {}", 
-            vo.getFileName(), vo.getFileType(), vo.getFolderType(), vo.getFileCategory());
-
         // 根据文件夹类型和 fileType 设置
         if (vo.getFolderType() == 1) {
             // 文件夹
             item.setFileType(5); // 其他
             item.setFileSuffix("");
-            log.info("文件夹类型，设置 fileType=5");
         } else {
             // 文件 - 直接使用 VO 中的 fileType 字段
             item.setFileType(vo.getFileType());
-            log.info("文件类型，使用原始 fileType: {}", vo.getFileType());
 
             // 从文件名提取后缀
             String fileName = vo.getFileName();
@@ -165,7 +156,6 @@ public class FileController {
         // 如果是图片，设置 fileCover 为 id（用户文件主键 ID），用于预览
         if (vo.getFileType() != null && vo.getFileType() == 3) {
             item.setFileCover(String.valueOf(vo.getId()));
-            log.info("图片文件，设置 fileCover 为 id: {}", vo.getId());
         } else {
             item.setFileCover("");
         }
@@ -181,8 +171,6 @@ public class FileController {
             item.setLastUpdateTime(vo.getLastUpdateTime().toString().replace("T", " "));
         }
 
-        log.info("====== 转换完成，最终 fileType: {}, fileCover: {} ======", 
-            item.getFileType(), item.getFileCover());
 
         return item;
     }
@@ -230,7 +218,7 @@ public class FileController {
     }
 
     // 创建下载链接
-    @GetMapping("/createDownloadUrl/{id}")
+    @PostMapping("/createDownloadUrl/{id}")
     @Operation(summary = "创建下载链接")
     public Result<String> createDownloadUrl(@PathVariable Long id, HttpServletRequest request) {
         Long userId = jwtUtil.getUserIdFromAccessToken(commonUtils.extractToken(request));
@@ -245,8 +233,78 @@ public class FileController {
     // 执行文件下载
     @GetMapping("/download/{downloadCode}")
     @Operation(summary = "执行文件下载")
-    public void download(@PathVariable String downloadCode, HttpServletRequest request, HttpServletResponse response) {
-        fileService.download(downloadCode, response);
+    public void download(@PathVariable String downloadCode, 
+                        @RequestParam(value = "token", required = false) String token,
+                        HttpServletRequest request, HttpServletResponse response) {
+        Long userId = null;
+        
+        // 优先从 token 参数获取（用于浏览器直接访问）
+        if (token != null && !token.isEmpty()) {
+            userId = jwtUtil.getUserIdFromAccessToken(token);
+        }
+        
+        // 如果 token 参数为空，尝试从 Authorization 头获取（用于 API 调用）
+        if (userId == null) {
+            userId = jwtUtil.getUserIdFromAccessToken(commonUtils.extractToken(request));
+        }
+        
+        if (userId == null) {
+            response.setStatus(403);
+            return;
+        }
+        
+        fileService.download(downloadCode, userId, response);
+    }
+
+    // 重命名文件或文件夹
+    @PostMapping("/rename")
+    @Operation(summary = "重命名文件或文件夹")
+    public Result<UserFileVO> rename(@RequestBody com.chunfeng.dto.request.file.RenameRequest request,
+                                     HttpServletRequest httpServletRequest) {
+        Long userId = jwtUtil.getUserIdFromAccessToken(commonUtils.extractToken(httpServletRequest));
+        if (userId == null) {
+            return Result.fail("未登录");
+        }
+        
+        UserFileVO result = fileService.rename(request.getFileId(), request.getFileName(), userId);
+        return Result.success(result);
+    }
+
+    // 新建文件夹
+    @PostMapping("/newFolder")
+    @Operation(summary = "新建文件夹")
+    public Result<UserFileVO> newFolder(@RequestBody RenameRequest request,
+                                        HttpServletRequest httpServletRequest) {
+        Long userId = jwtUtil.getUserIdFromAccessToken(commonUtils.extractToken(httpServletRequest));
+        if (userId == null) {
+            return Result.fail("未登录");
+        }
+        
+        UserFileVO result = fileService.newFolder(request.getFilePid(), request.getFileName(), userId);
+        return Result.success(result);
+    }
+
+    // 获取文件夹信息（用于导航）
+    @GetMapping("/getFolderInfo")
+    @Operation(summary = "获取文件夹信息")
+    public Result<List<UserFileVO>> getFolderInfo(
+            @RequestParam(value = "path", required = false) String path,
+            @RequestParam(value = "shareId", required = false) String shareId,
+            HttpServletRequest httpServletRequest) {
+        
+        // 如果是分享场景，使用分享逻辑（这里先不实现）
+        if (shareId != null && !shareId.isEmpty()) {
+            // TODO: 实现分享场景下的文件夹获取
+            return Result.success(List.of());
+        }
+        
+        Long userId = jwtUtil.getUserIdFromAccessToken(commonUtils.extractToken(httpServletRequest));
+        if (userId == null) {
+            return Result.fail("未登录");
+        }
+        
+        List<UserFileVO> result = fileService.getFolderInfo(path, userId);
+        return Result.success(result);
     }
 
 }

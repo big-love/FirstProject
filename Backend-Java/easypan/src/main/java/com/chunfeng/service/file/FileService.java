@@ -10,6 +10,8 @@ import com.chunfeng.entity.vo.UserFileVO;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.Data;
 
+import java.util.List;
+
 
 /**
  * @ClassName FileService
@@ -46,6 +48,8 @@ public interface FileService {
      */
     FilePreviewResponse getFilePreview(String fileId, Long userId);
 
+    UserFilePO getFileInfo(String fileId, Long userId);
+
     /**
      * 获取文件内容（预览/下载用）
      *
@@ -81,12 +85,35 @@ public interface FileService {
      */
     void download(String downloadCode, HttpServletResponse response);
 
-    
-    UserFilePO getFileInfo(String fileId, Long userId);
-    
-    @Data
-    class FileInfo {
-        private String fileName;
-        private Integer fileType;
-    }
+    void download(String downloadCode, Long userId, HttpServletResponse response);
+
+    /**
+     * 重命名文件或文件夹
+     *
+     * @param fileId 文件 ID
+     * @param fileName 新文件名
+     * @param userId 用户 ID
+     * @return 重命名后的文件信息
+     */
+    UserFileVO rename(String fileId, String fileName, Long userId);
+
+    /**
+     * 新建文件夹
+     *
+     * @param filePid 父目录 ID
+     * @param fileName 文件夹名称
+     * @param userId 用户 ID
+     * @return 新建的文件夹信息
+     */
+    UserFileVO newFolder(String filePid, String fileName, Long userId);
+
+    /**
+     * 获取文件夹信息（用于导航）
+     *
+     * @param path 路径（文件夹 ID 路径，格式如 "1/2/3"）
+     * @param userId 用户 ID
+     * @return 文件夹列表
+     */
+    List<UserFileVO> getFolderInfo(String path, Long userId);
+
 }
