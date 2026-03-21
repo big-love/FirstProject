@@ -43,7 +43,12 @@ public class LoadFileListResponse {
         /**
          * 文件 ID
          */
-        private String fileId;
+        private Long id;
+
+        /**
+         * 文件 ID
+         */
+        private Long fileId;
 
         /**
          * 文件名（含扩展名）
@@ -59,6 +64,8 @@ public class LoadFileListResponse {
          * 文件类型：1-视频，2-音频，3-图片，4-文档，5-其他
          */
         private Integer fileType;
+
+        private Integer fileCategory;
 
         /**
          * 0-文件，1-文件夹

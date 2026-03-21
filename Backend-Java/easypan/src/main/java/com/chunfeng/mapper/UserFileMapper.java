@@ -59,4 +59,9 @@ public interface UserFileMapper {
 
     @Select("select * from user_file where user_id = #{userId} and file_pid = #{filePid} and file_name = #{fileName}")
     UserFilePO selectByUserIdAndPidAndName(Long userId, @NotBlank(message = "父级ID不能为空") String filePid, @NotBlank(message = "文件名不能为空") String fileName);
+
+    /**
+     * 根据文件 ID 和用户 ID 查询文件
+     */
+    UserFilePO selectByFileIdAndUserId(String fileId, Long userId);
 }

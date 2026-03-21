@@ -9,10 +9,10 @@ import java.util.concurrent.TimeUnit;
 
 @Component("redisUtils")
 @Slf4j
-public class RedisUtils<V> {
+public class RedisUtils {
 
     @Resource
-    private RedisTemplate<String,V> redisTemplate;
+    private RedisTemplate<String, Object> redisTemplate;
 
 
     public String getString(String key) {
@@ -31,14 +31,14 @@ public class RedisUtils<V> {
         return value.toString();
     }
 
-    public V get(String key) {
+    public Object get(String key) {
         return key == null ? null : redisTemplate.opsForValue().get(key);
     }
 
     /**
      * 指定缓存失效时间
      * @param key 键
-     * @param time 时间(秒)
+     * @param time 时间 (秒)
      * @return boolean
      */
     public boolean expire(String key, long time) {
@@ -56,13 +56,13 @@ public class RedisUtils<V> {
     /**
      * 递增
      * @param key 键
-     * @param delta 要增加几(大于0)
+     * @param delta 要增加几 (大于 0)
      * @return 自增后的值
      */
     public Long increment(String key, long delta) {
         try {
             if (delta < 0) {
-                throw new RuntimeException("递增因子必须大于0");
+                throw new RuntimeException("递增因子必须大于 0");
             }
             return redisTemplate.opsForValue().increment(key, delta);
         } catch (Exception e) {
@@ -72,12 +72,12 @@ public class RedisUtils<V> {
     }
 
 
-    public boolean set(String key, V value) {
+    public boolean set(String key, Object value) {
         try {
             redisTemplate.opsForValue().set(key, value);
             return true;
         } catch (Exception e) {
-            log.error(" 设置redisKey:{}, Value:{}失败", key, value);
+            log.error(" 设置 redisKey:{}, Value:{}失败", key, value);
             return false;
         }
     }
@@ -86,7 +86,7 @@ public class RedisUtils<V> {
     /*
     * 设计有效时间
     * */
-    public boolean setex(String key, V value, long time) {
+    public boolean setex(String key, Object value, long time) {
         try {
             if (time > 0) {
                 redisTemplate.opsForValue().set(key, value, time, TimeUnit.SECONDS);
@@ -95,7 +95,7 @@ public class RedisUtils<V> {
             }
             return true;
         } catch (Exception e) {
-            log.error(" 设置redisKey:{}, Value:{}失败", key, value);
+            log.error(" 设置 redisKey:{}, Value:{}失败", key, value);
             return false;
         }
     }
@@ -105,7 +105,7 @@ public class RedisUtils<V> {
         try {
             redisTemplate.delete(key);
         } catch (Exception e) {
-            log.error(" 删除redisKey:{}失败", key);
+            log.error(" 删除 redisKey:{}失败", key);
         }
     }
 }

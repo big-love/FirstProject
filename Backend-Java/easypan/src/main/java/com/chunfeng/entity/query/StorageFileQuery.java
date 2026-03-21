@@ -51,4 +51,8 @@ public class StorageFileQuery extends PageQuery {
      * 创建时间结束
      */
     private String createTimeEnd;
+
+    private Integer fileCategory;
+
+    private Integer fileType;
 }

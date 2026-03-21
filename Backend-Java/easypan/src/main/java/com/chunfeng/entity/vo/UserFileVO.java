@@ -29,7 +29,7 @@ public class UserFileVO implements Serializable {
     /**
      * 业务文件ID
      */
-    private String fileId;
+    private Long fileId;
 
     /**
      * 用户ID
@@ -90,4 +90,8 @@ public class UserFileVO implements Serializable {
      * 最后更新时间
      */
     private LocalDateTime lastUpdateTime;
+
+    private Integer fileCategory;
+
+    private Integer fileType;
 }

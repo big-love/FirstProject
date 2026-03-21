@@ -9,10 +9,12 @@
         <result column="file_path" property="filePath"/>
         <result column="ref_count" property="refCount"/>
         <result column="create_time" property="createTime"/>
+        <result column="file_category" property="fileCategory"/>
+        <result column="file_type" property="fileType"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, file_md5, file_size, file_path, ref_count, create_time
+        id, file_md5, file_size, file_path, ref_count, create_time, file_category, file_type
     </sql>
 
     <sql id="Query_Where_Clause">
@@ -74,8 +76,8 @@
     </select>
 
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO storage_file (file_md5, file_size, file_path, ref_count)
-        VALUES (#{fileMd5}, #{fileSize}, #{filePath}, #{refCount})
+        INSERT INTO storage_file (file_md5, file_size, file_path, ref_count, file_category, file_type)
+        VALUES (#{fileMd5}, #{fileSize}, #{filePath}, #{refCount}, #{fileCategory}, #{fileType})
     </insert>
 
     <update id="updateRefCount">

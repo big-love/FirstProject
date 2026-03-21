@@ -46,4 +46,8 @@ public class StorageFilePO implements Serializable {
      * 创建时间
      */
     private LocalDateTime createTime;
+
+    private Integer fileCategory;
+
+    private Integer fileType;
 }

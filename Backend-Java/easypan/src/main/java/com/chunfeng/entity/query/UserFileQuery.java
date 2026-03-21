@@ -83,4 +83,8 @@ public class UserFileQuery extends PageQuery {
      * 更新时间结束
      */
     private String updateTimeEnd;
+
+    private Integer fileCategory;
+
+    private Integer fileType;
 }

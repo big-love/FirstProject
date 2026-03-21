@@ -14,11 +14,13 @@
         <result column="del_flag" property="delFlag"/>
         <result column="create_time" property="createTime"/>
         <result column="last_update_time" property="lastUpdateTime"/>
+        <result column="file_category" property="fileCategory"/>
+        <result column="file_type" property="fileType"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id, file_id, user_id, storage_id, file_pid, file_name,
-        file_size, folder_type, del_flag, create_time, last_update_time
+        file_size, folder_type, del_flag, create_time, last_update_time, file_category, file_type
     </sql>
 
     <sql id="Query_Where_Clause">
@@ -43,6 +45,12 @@
             </if>
             <if test="query.storageId != null">
                 AND storage_id = #{query.storageId}
+            </if>
+            <if test="query.fileCategory != null">
+                AND file_category = #{query.fileCategory}
+            </if>
+            <if test="query.fileType != null">
+                AND file_type = #{query.fileType}
             </if><if test="query.fileSizeMin != null">
             AND file_size &gt;= #{query.fileSizeMin}
         </if>
@@ -111,10 +119,10 @@
     <insert id="insert" useGeneratedKeys="true" keyProperty="id">
         INSERT INTO user_file (
             file_id, user_id, storage_id, file_pid, file_name,
-            file_size, folder_type, del_flag
+            file_size, folder_type, del_flag, file_category, file_type
         ) VALUES (
                      #{fileId}, #{userId}, #{storageId}, #{filePid}, #{fileName},
-                     #{fileSize}, #{folderType}, #{delFlag}
+                     #{fileSize}, #{folderType}, #{delFlag}, #{fileCategory}, #{fileType}
                  )
     </insert>
 
@@ -150,5 +158,16 @@
             #{fileId}
         </foreach>
     </update>
+
+
+    <select id="selectByFileIdAndUserId" resultType="com.chunfeng.entity.po.UserFilePO">
+        SELECT
+            id, file_id, user_id, storage_id, file_pid, file_name, file_size,
+            folder_type, del_flag, create_time, last_update_time, file_category, file_type
+        FROM user_file
+        WHERE file_id = #{fileId}
+          AND user_id = #{userId}
+          AND del_flag = 2
+    </select>
 
 </mapper>
